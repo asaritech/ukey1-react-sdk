@@ -10,17 +10,15 @@ var Connect = require('./endpoints/Connect');
 var AccessToken = require('./endpoints/AccessToken');
 var User = require('./endpoints/User');
 
-const sdkVersion = '1.0.0';
-const apiVersion = '/v1';
+const sdkVersion = '2.0.0';
 const ukey1GetParams = '_ukey1';
-const host = 'https://ukey1-api.nooledge.com';
+const host = 'https://api.ukey.one';
 
 function checkOptions(o) {
   checkOption('options', o, 'object', true);
   checkOption('options.appId', o.appId, 'string', true);
 
   o.sdkVersion = sdkVersion;
-  o.apiVersion = apiVersion;
 
   if (!o.host) {
     o.host = host;
@@ -41,7 +39,7 @@ Ukey1.prototype.connect = function (o) {
 
   new Connect(options).execute(function (data) {
     var ds = new DeviceStorage().sessionStorage();
-    var gateway = data.gateway.url;
+    var gateway = data.gateway;
 
     if (options.signup) {
       gateway += (gateway.search(/\?/) >= 0 ? '&' : '?') + 'signup=1';
@@ -74,6 +72,7 @@ Ukey1.prototype.accessToken = function (o) {
     requestId = getQueryParameter(ukey1GetParams + '[request_id]');
     connectId = getQueryParameter(ukey1GetParams + '[connect_id]');
     status = getQueryParameter(ukey1GetParams + '[result]');
+    options.authCode = getQueryParameter(ukey1GetParams + '[code]');
 
     if (!requestId || requestId !== options.requestId) {
       console.log('Invalid requestId');
@@ -88,14 +87,7 @@ Ukey1.prototype.accessToken = function (o) {
     }
 
     if (status !== 'authorized') {
-      if (status === 'canceled') {
-        console.log('User has canceled the request');
-      } else if (status === 'expired') {
-        console.log('The request expired');
-      } else {
-        console.log('Unknown status');
-      }
-
+      console.log('User has canceled the request');
       options.finished(false);
       return false;
     }
@@ -105,10 +97,6 @@ Ukey1.prototype.accessToken = function (o) {
         options.accessToken = data.access_token;
 
         new User(options).execute(function (data) {
-          if (!data.authorized) {
-            throw new Error('User has canceled their consent to share data with your app');
-          }
-
           options.success(data.user, new UserData(data.user));
           options.finished(true);
         });

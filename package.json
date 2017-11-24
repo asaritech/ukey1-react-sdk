@@ -1,6 +1,6 @@
 {
   "name": "ukey1-react-sdk",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Ukey1 SDK for React apps",
   "main": "src/index.js",
   "dependencies": {

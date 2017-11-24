@@ -4,16 +4,15 @@ var React = require('react');
 var checkOption = require('../helpers/checkOption');
 
 const popsicle = require('popsicle');
-const timeout = 10000;
+const timeout = 5000;
 const userAgent = 'ukey1-react-sdk/';
-const authMethod = 'UKEY1 ';
+const authMethod = 'Bearer ';
 
 function checkOptions(o) {
   checkOption('options', o, 'object', true);
   checkOption('options.appId', o.appId, 'string', true);
   checkOption('options.host', o.host, 'string', true);
   checkOption('options.sdkVersion', o.sdkVersion, 'string', true);
-  checkOption('options.apiVersion', o.apiVersion, 'string', true);
   checkOption('options.method', o.method, 'string', true, ['GET', 'POST']);
   checkOption('options.endpoint', o.endpoint, 'string', true);
   checkOption('options.accessToken', o.accessToken, 'string', false);
@@ -26,7 +25,7 @@ function Request(o) {
 }
 
 Request.prototype.prepareHeaders = function (h) {
-  h['x-ukey1-user-agent'] = h['User-Agent'] = this.prepareUserAgent();
+  h['User-Agent'] = this.prepareUserAgent();
   h['x-ukey1-app'] = this.o.appId;
 
   if (this.o.accessToken) {
@@ -63,7 +62,7 @@ Request.prototype.send = function (body, callback) {
   var options = {}, headers = {};
 
   headers = this.prepareHeaders(headers);
-  options.url = this.o.host + this.o.apiVersion + this.o.endpoint;
+  options.url = this.o.host + this.o.endpoint;
   options.method = this.o.method;
   options.timeout = timeout;
 

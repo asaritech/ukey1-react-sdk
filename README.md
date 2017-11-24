@@ -1,30 +1,29 @@
 # Ukey1 SDK for React
 
-This repository contains the open source React SDK that allows you to access the **[Ukey1 API](http://ukey.one)** from your React app.
+This repository contains the open source React SDK that allows you to access the **[Ukey1 API](https://ukey.one)** from your React app.
+
+**!!! Please note that versions older than 2.0.0 are deprecated and don't work since November 15, 2017 !!!**
 
 ## About Ukey1
 
-[Ukey1](http://ukey.one) is *an aggregator of your user's social identities*.
-Ukey1 is also a [OAuth 2.0](https://oauth.net/2/) provider but what is more important, it connects all major identity providers
-(like [Google](https://developers.google.com/identity/) or [Facebook](https://developers.facebook.com/docs/facebook-login))
-into one sophisticated solution. It's the easiest way to login to websites! Read [more](http://ukey.one/).
+[Ukey1](https://ukey.one) is an Authentication and Data Protection Service with the mission to enhance security of websites. 
+The service is designed to help you with EU GDPR compliance.
 
 ### Ukey1 flow for this React SDK
 
 1. User clicks to "sign-in" button
-  - you may use our [unified sign-in button](https://github.com/asaritech/ukey1-signin-button)
+   - you can use our [unified sign-in button](https://github.com/asaritech/ukey1-signin-button) if you want
 2. SDK sends a connection request to our API and gets a unique Gateway URL
 3. User is redirected to Ukey1 Gateway
 4. User signs in using their favourite solution and authorizes your app
 5. User is redirected back to predefined URL
 6. SDK checks the result and gets a unique access token - user is authenticated
-7. SDK gets user's data and that's it
+7. That's it - user is authenticated (your app can make API calls to get user's data)
 
 ### API specification
 
-You can also download our API specification in the following formats:
-- [RAML 1.0 specification](https://ukey1.nooledge.com/var/public/api.raml) (learn more about [RAML](http://raml.org/))
-- [Swagger 2.0 specification](https://ukey1.nooledge.com/var/public/api.yaml) (learn more about [Swagger](http://swagger.io/) or open the specification in [editor](http://editor.swagger.io/#/))
+- [API specification](https://ukey1.docs.apiary.io/)
+- [Documentation](https://asaritech.github.io/ukey1-docs/)
 
 ## Requirements
 
@@ -38,8 +37,8 @@ You can also download our API specification in the following formats:
 
 ## Usage
 
-First, you need your `App ID`. Remember that React SDK servers for client-side apps, so *you won't need the Secret Key*!
-We also recommend to set the *Client-side protection* in our Developer Console.
+First, you need your [App ID](https://dashboard.ukey.one/developer). Remember that React SDK serves for client-side apps, so *you won't need the Secret Key*!
+In our dashboard, we also recommend to activate Domain and Return URL Protection.
 
 ### Example
 
@@ -49,7 +48,7 @@ First, let's see how to redirect user to Ukey1 Gateway...
 import React, { Component } from 'react';
 import Ukey1 from 'ukey1-react-sdk';
 
-const UKEY1_APP_ID = 'your-app-id';
+const UKEY1_APP_ID = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
 
 class MyApp extends Component {
   // ...
@@ -66,16 +65,8 @@ class MyApp extends Component {
       // - it may contain query parameters and/or fragment
       returnUrl: 'http://example.org/login?action=check&user=XXX#fragment',
 
-      // Here is a list of possible grants:
-      // - `access_token` (always default)
-      // - `email` (access to user's email)
-      // - `image` (access to user's thumbnail)
-      // NOTE: If you are eligible to use "!" (means a required value), you may use it with `email!` and `image!`
-      // NOTE: `refresh_token` is prohibited for client-side integrations!
-      scope: ['access_token', 'email', 'image'],
-
-      // This option allows you change the gateway screen (Sign up versus Log in)
-      signup: true
+      // See the full list of permissions: https://asaritech.github.io/ukey1-docs/Docs/Permissions/#data-fields
+      scope: ['firstname', 'email']
     };
 
     try {
@@ -97,7 +88,8 @@ class MyApp extends Component {
 export default MyApp;
 ```
 
-Then the user is redirected back to your app. You have to handle the event and call authorization method like this:
+Once the user authorizes your app, Ukey1 redirects the user back to your app to the URL you specified earlier. 
+The same is done if user cancels the request. You have to handle the event and call authorization method like this:
 
 ```javascript
 // ...
@@ -108,24 +100,14 @@ authorizationEvent() {
     success: function (data, dataObj) {
       // This callback is called when user is successfully authorized
 
-      // Store `data` in localStorage or sessionStorage if you want
-      // TIP: you can use our open source package `react-device-storage`
-
       // And do whatever you want
       // Possible `dataObj` usage:
 
-      let userId = dataObj.getId();
-      let userFullName = dataObj.getFullName();
-      let userForename = dataObj.getForename();
-      let userSurname = dataObj.getSurname();
-      let userLanguage = dataObj.getLanguage();
-      let userCountry = dataObj.getCountry();
+      let userId = dataObj.id();
 
-      // NOTE: may return null if user don't wanna share their email with your app
-      let userEmail = dataObj.getEmail();
-
-      // NOTE: may return null if user don't wanna share their image with your app
-      let userImgSrc = dataObj.getImage();
+      // Please note that everything excepts ID and mandatory fields may be empty if the user decides to not to grant you access to that field
+      let userFirstname = dataObj.firstname();
+      let userEmail = dataObj.email();
     }.bind(this),
     finished: function (success) {
       // This callback is called everytime (even if request is successful or not)

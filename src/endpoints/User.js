@@ -3,7 +3,7 @@
 var checkOption = require('../helpers/checkOption');
 var Request = require('../client/Request');
 
-const endpoint = '/me';
+const endpoint = '/auth/v2/me';
 
 function checkOptions(o) {
   checkOption('options.accessToken', o.accessToken, 'string', true);
